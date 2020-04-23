@@ -1,42 +1,29 @@
+require_relative 'time_formatter'
+
 class App
 
-  FORMATS = {
-    'year' => 'Y', 'month' => 'm', 'day' => 'd',
-    'hour' => 'H', 'minute' => 'M', 'second' => 'S'
-  }
-
   def call(env)
-    status = define_status(env)
-    body = define_body(status, env['permitted'], env['forbidden'])
+    @request = Rack::Request.new(env)
+    @response = Rack::Response.new
+    @time_formatter = TimeFormatter.new(@request.query_string)
 
-    [status, headers, body]
+    @response['Content-Type'] = 'text/plain'
+    @response.status = set_status
+    @response.body = set_body
+    @response.finish
   end
 
   private
 
-  def define_status(env)
-    return 404 if env['PATH_INFO'] != '/time' || env['field'] != 'format' || env['REQUEST_METHOD'] != 'GET'
-    return 200 if env['forbidden'].nil? || env['forbidden'].empty?
+  def set_status
+    return 404 unless @request.path_info == '/time' && @request.get? && @time_formatter.field == 'format'
+    return 200 if @time_formatter.forbidden_values.empty?
     400
   end
 
-  def headers
-    {'Content-Type' => 'text/plain'}
-  end
-
-  def define_body(status, permitted, forbidden)
-    return ["Not found\n"] if status == 404
-    return ["Unknown time format #{forbidden}\n"] if status == 400
-    [Time.now.strftime(format_permitted(permitted)) + "\n"]
-  end
-
-  def format_permitted(permitted)
-    return "" if permitted.nil?
-
-    formatted_array = []
-    FORMATS.each do |key, value|
-      formatted_array << "%#{FORMATS[key]}" if permitted.include?(key)
-    end
-    formatted_string = formatted_array.join('-')
+  def set_body
+    return ["Not found\n"] if @response.status == 404
+    return ["Unknown time format #{@time_formatter.forbidden_values}\n"] if @response.status == 400
+    [@time_formatter.formatted_string]
   end
 end

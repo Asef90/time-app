@@ -7,7 +7,6 @@ class TimeFormatter
   attr_reader :forbidden_values, :allowed_values
 
   def initialize(format)
-    format ||= ""
     @values = format.split(',')
     @forbidden_values = @values - FORMATS.keys
     @allowed_values = (@values - @forbidden_values).uniq

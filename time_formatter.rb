@@ -1,36 +1,29 @@
 class TimeFormatter
   FORMATS = {
-    'year' => 'Y', 'month' => 'm', 'day' => 'd',
-    'hour' => 'H', 'minute' => 'M', 'second' => 'S'
+    "year" => "%Y", "month" => "%m", "day" => "%d",
+    "hour" => "%H", "minute" => "%M", "second" => "%S"
   }
 
-  def initialize(query_string)
-    @query_array = query_string.split('=')
+  attr_reader :forbidden_values, :allowed_values
+
+  def initialize(format)
+    format ||= ""
+    @values = format.split(',')
+    @forbidden_values = @values - FORMATS.keys
+    @allowed_values = (@values - @forbidden_values).uniq
   end
 
-  def field
-    @query_array[0]
+  def call
+    Time.now.strftime(formatted_string)
   end
 
-  def values
-    return @query_array[1].split(',') if @query_array[1]
-    []
+  def valid?
+    forbidden_values.empty?
   end
 
-  def forbidden_values
-    values - FORMATS.keys
-  end
-
-  def permitted_values
-    values - forbidden_values
-  end
+  private
 
   def formatted_string
-    formatted_array = []
-    FORMATS.each do |key, value|
-      formatted_array << "%#{value}" if permitted_values.include?(key)
-    end
-
-    Time.now.strftime(formatted_array.join('-') + "\n")
+    allowed_values.map { |value| FORMATS[value] }.join('-') + "\n"
   end
 end

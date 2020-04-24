@@ -7,22 +7,27 @@ class TimeFormatter
   attr_reader :forbidden_values, :allowed_values
 
   def initialize(format)
-    values = format.split(',')
-    @forbidden_values = values - FORMATS.keys
-    @allowed_values = (values - @forbidden_values).uniq
+    @values = format.split(',')
+    @forbidden_values = []
+    @allowed_values = []
   end
 
   def call
-    Time.now.strftime(formatted_string)
+    self.forbidden_values = values - FORMATS.keys
+    self.allowed_values = (values - forbidden_values).uniq
   end
 
-  def invalid?
-    forbidden_values.any?
+  def valid?
+    forbidden_values.empty?
+  end
+
+  def get_time
+    string = allowed_values.map { |value| FORMATS[value] }.join('-') + "\n"
+    Time.now.strftime(string)
   end
 
   private
 
-  def formatted_string
-    allowed_values.map { |value| FORMATS[value] }.join('-') + "\n"
-  end
+  attr_reader :values
+  attr_writer :forbidden_values, :allowed_values, :values
 end

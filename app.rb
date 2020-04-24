@@ -17,11 +17,12 @@ class App
 
   def set_response(request)
     time_formatter = TimeFormatter.new(request.params['format'])
+    time_formatter.call
 
-    if time_formatter.invalid?
-      response(404, ["Unknown time format #{time_formatter.forbidden_values}\n"])
+    if time_formatter.valid?
+      response(200, [time_formatter.get_time])
     else
-      response(200, [time_formatter.call])
+      response(404, ["Unknown time format #{time_formatter.forbidden_values}\n"])
     end
   end
 

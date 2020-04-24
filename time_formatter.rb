@@ -4,8 +4,6 @@ class TimeFormatter
     "hour" => "%H", "minute" => "%M", "second" => "%S"
   }
 
-  attr_reader :forbidden_values, :allowed_values
-
   def initialize(format)
     @values = format.split(',')
     @forbidden_values = []
@@ -26,8 +24,11 @@ class TimeFormatter
     Time.now.strftime(string)
   end
 
+  def get_error
+    "Unknown time format #{forbidden_values}\n"
+  end
+
   private
 
-  attr_reader :values
-  attr_writer :forbidden_values, :allowed_values, :values
+  attr_accessor :forbidden_values, :allowed_values, :values
 end

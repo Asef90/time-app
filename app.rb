@@ -22,7 +22,7 @@ class App
     if time_formatter.valid?
       response(200, [time_formatter.get_time])
     else
-      response(404, ["Unknown time format #{time_formatter.forbidden_values}\n"])
+      response(404, [time_formatter.get_error])
     end
   end
 
